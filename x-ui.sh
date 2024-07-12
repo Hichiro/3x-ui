@@ -784,13 +784,13 @@ ssl_cert_issue_main() {
     2)
         local domain=""
         read -p "Please enter your domain name to revoke the certificate: " domain
-        ~/.acme.sh/acme.sh --revoke -d ${domain}
+        /user/local/.acme.sh/acme.sh --revoke -d ${domain}
         LOGI "Certificate revoked"
         ;;
     3)
         local domain=""
         read -p "Please enter your domain name to forcefully renew an SSL certificate: " domain
-        ~/.acme.sh/acme.sh --renew -d ${domain} --force
+        /user/local/.acme.sh/acme.sh --renew -d ${domain} --force
         ;;
     *) echo "Invalid choice" ;;
     esac
@@ -798,7 +798,7 @@ ssl_cert_issue_main() {
 
 ssl_cert_issue() {
     # check for acme.sh first
-    if ! command -v ~/.acme.sh/acme.sh &>/dev/null; then
+    if ! command -v /user/local/.acme.sh/acme.sh &>/dev/null; then
         echo "acme.sh could not be found. we will install it"
         install_acme
         if [ $? -ne 0 ]; then
@@ -837,10 +837,10 @@ ssl_cert_issue() {
     read -p "Please enter your domain name:" domain
     LOGD "your domain is:${domain},check it..."
     # here we need to judge whether there exists cert already
-    local currentCert=$(~/.acme.sh/acme.sh --list | tail -1 | awk '{print $1}')
+    local currentCert=$(/user/local/.acme.sh/acme.sh --list | tail -1 | awk '{print $1}')
 
     if [ ${currentCert} == ${domain} ]; then
-        local certInfo=$(~/.acme.sh/acme.sh --list)
+        local certInfo=$(/user/local/.acme.sh/acme.sh --list)
         LOGE "system already has certs here,can not issue again,current certs details:"
         LOGI "$certInfo"
         exit 1
@@ -866,29 +866,29 @@ ssl_cert_issue() {
     LOGI "will use port:${WebPort} to issue certs,please make sure this port is open..."
     # NOTE:This should be handled by user
     # open the port and kill the occupied progress
-    ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
-    ~/.acme.sh/acme.sh --issue -d ${domain} --listen-v6 --standalone --httpport ${WebPort}
+    /user/local/.acme.sh/acme.sh --set-default-ca --server letsencrypt
+    /user/local/.acme.sh/acme.sh --issue -d ${domain} --listen-v6 --standalone --httpport ${WebPort}
     if [ $? -ne 0 ]; then
         LOGE "issue certs failed,please check logs"
-        rm -rf ~/.acme.sh/${domain}
+        rm -rf /user/local/.acme.sh/${domain}
         exit 1
     else
         LOGE "issue certs succeed,installing certs..."
     fi
     # install cert
-    ~/.acme.sh/acme.sh --installcert -d ${domain} \
+    /user/local/.acme.sh/acme.sh --installcert -d ${domain} \
         --key-file /etc/ssl/certs/${domain}/privkey.pem \
         --fullchain-file /etc/ssl/certs/${domain}/fullchain.pem
 
     if [ $? -ne 0 ]; then
         LOGE "install certs failed,exit"
-        rm -rf ~/.acme.sh/${domain}
+        rm -rf /user/local/.acme.sh/${domain}
         exit 1
     else
         LOGI "install certs succeed,enable auto renew..."
     fi
 
-    ~/.acme.sh/acme.sh --upgrade --auto-upgrade
+    /user/local/.acme.sh/acme.sh --upgrade --auto-upgrade
     if [ $? -ne 0 ]; then
         LOGE "auto renew failed, certs details:"
         ls -lah cert/*
@@ -912,7 +912,7 @@ ssl_cert_issue_CF() {
     confirm "Confirmed?[y/n]" "y"
     if [ $? -eq 0 ]; then
         # check for acme.sh first
-        if ! command -v ~/.acme.sh/acme.sh &>/dev/null; then
+        if ! command -v /user/local/.acme.sh/acme.sh &>/dev/null; then
             echo "acme.sh could not be found. we will install it"
             install_acme
             if [ $? -ne 0 ]; then
@@ -939,21 +939,21 @@ ssl_cert_issue_CF() {
         LOGD "Please set up registered email:"
         read -p "Input your email here:" CF_AccountEmail
         LOGD "Your registered email address is:${CF_AccountEmail}"
-        ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
+        /user/local/.acme.sh/acme.sh --set-default-ca --server letsencrypt
         if [ $? -ne 0 ]; then
             LOGE "Default CA, Lets'Encrypt fail, script exiting..."
             exit 1
         fi
         export CF_Key="${CF_GlobalKey}"
         export CF_Email=${CF_AccountEmail}
-        ~/.acme.sh/acme.sh --issue --dns dns_cf -d ${CF_Domain} -d *.${CF_Domain} --log
+        /user/local/.acme.sh/acme.sh --issue --dns dns_cf -d ${CF_Domain} -d *.${CF_Domain} --log
         if [ $? -ne 0 ]; then
             LOGE "Certificate issuance failed, script exiting..."
             exit 1
         else
             LOGI "Certificate issued Successfully, Installing..."
         fi
-        ~/.acme.sh/acme.sh --installcert -d ${CF_Domain} -d *.${CF_Domain} --ca-file /etc/ssl/certs/ca.cer \
+        /user/local/.acme.sh/acme.sh --installcert -d ${CF_Domain} -d *.${CF_Domain} --ca-file /etc/ssl/certs/ca.cer \
             --cert-file /etc/ssl/certs/${CF_Domain}.cer --key-file /etc/ssl/certs/${CF_Domain}.key \
             --fullchain-file /etc/ssl/certs/fullchain.cer
         if [ $? -ne 0 ]; then
@@ -962,7 +962,7 @@ ssl_cert_issue_CF() {
         else
             LOGI "Certificate installed Successfully,Turning on automatic updates..."
         fi
-        ~/.acme.sh/acme.sh --upgrade --auto-upgrade
+        /user/local/.acme.sh/acme.sh --upgrade --auto-upgrade
         if [ $? -ne 0 ]; then
             LOGE "Auto update setup Failed, script exiting..."
             ls -lah cert
