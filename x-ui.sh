@@ -849,7 +849,7 @@ ssl_cert_issue() {
     fi
 
     # create a directory for install cert
-    certPath="/usr/local/cert/${domain}"
+    certPath="/root/cert/${domain}"
     if [ ! -d "$certPath" ]; then
         mkdir -p "$certPath"
     else
@@ -877,8 +877,8 @@ ssl_cert_issue() {
     fi
     # install cert
     ~/.acme.sh/acme.sh --installcert -d ${domain} \
-        --key-file /usr/local/cert/${domain}/privkey.pem \
-        --fullchain-file /usr/local/cert/${domain}/fullchain.pem
+        --key-file /root/cert/${domain}/privkey.pem \
+        --fullchain-file /root/cert/${domain}/fullchain.pem
 
     if [ $? -ne 0 ]; then
         LOGE "install certs failed,exit"
@@ -908,7 +908,7 @@ ssl_cert_issue_CF() {
     LOGI "1.Cloudflare Registered e-mail"
     LOGI "2.Cloudflare Global API Key"
     LOGI "3.The domain name that has been resolved dns to the current server by Cloudflare"
-    LOGI "4.The script applies for a certificate. The default installation path is /usr/local/cert "
+    LOGI "4.The script applies for a certificate. The default installation path is /root/cert "
     confirm "Confirmed?[y/n]" "y"
     if [ $? -eq 0 ]; then
         # check for acme.sh first
@@ -923,7 +923,7 @@ ssl_cert_issue_CF() {
         CF_Domain=""
         CF_GlobalKey=""
         CF_AccountEmail=""
-        certPath=/usr/local/cert
+        certPath=/root/cert
         if [ ! -d "$certPath" ]; then
             mkdir $certPath
         else
@@ -953,9 +953,9 @@ ssl_cert_issue_CF() {
         else
             LOGI "Certificate issued Successfully, Installing..."
         fi
-        ~/.acme.sh/acme.sh --installcert -d ${CF_Domain} -d *.${CF_Domain} --ca-file /usr/local/cert/ca.cer \
-            --cert-file /usr/local/cert/${CF_Domain}.cer --key-file /usr/local/cert/${CF_Domain}.key \
-            --fullchain-file /usr/local/cert/fullchain.cer
+        ~/.acme.sh/acme.sh --installcert -d ${CF_Domain} -d *.${CF_Domain} --ca-file /root/cert/ca.cer \
+            --cert-file /root/cert/${CF_Domain}.cer --key-file /root/cert/${CF_Domain}.key \
+            --fullchain-file /root/cert/fullchain.cer
         if [ $? -ne 0 ]; then
             LOGE "Certificate installation failed, script exiting..."
             exit 1
