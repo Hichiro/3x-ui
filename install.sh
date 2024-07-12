@@ -101,7 +101,7 @@ fi
 install_base() {
     case "${release}" in
     ubuntu | debian | armbian)
-        apt-get update && apt-get install -y -q wget curl tar tzdata systemctl
+        apt-get update && apt-get install -y -q wget curl tar tzdata systemctl ca-certificates
         ;;
     centos | almalinux | rocky | oracle)
         yum -y update && yum install -y -q wget curl tar tzdata
@@ -171,12 +171,12 @@ config_after_install() {
 install_x-ui() {
     cd /usr/local/
 
-#    if [ $# == 0 ]; then
-#        last_version=$(curl -Ls "https://api.github.com/repos/MHSanaei/3x-ui/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-#        if [[ ! -n "$last_version" ]]; then
-#            echo -e "${red}Failed to fetch x-ui version, it maybe due to Github API restrictions, please try it later${plain}"
-#            exit 1
-#        fi
+    if [ $# == 0 ]; then
+        last_version=$(curl -Ls "https://api.github.com/repos/MHSanaei/3x-ui/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+        if [[ ! -n "$last_version" ]]; then
+            echo -e "${red}Failed to fetch x-ui version, it maybe due to Github API restrictions, please try it later${plain}"
+            exit 1
+        fi
         echo -e "Got x-ui latest version: ${last_version}, beginning the installation..."
         wget -N --no-check-certificate -O /usr/local/x-ui-linux-$(arch).tar.gz https://github.com/MHSanaei/3x-ui/releases/latest/download/x-ui-linux-$(arch).tar.gz
         if [[ $? -ne 0 ]]; then
