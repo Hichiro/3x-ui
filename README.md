@@ -29,7 +29,7 @@ bash <(curl -Ls https://github.com/Hichiro/3x-ui/blob/main/x-ui.sh)
 To install your desired version, add the version to the end of the installation command. e.g., ver `v2.3.7`:
 
 ```
-wget --no-check-certificate https://raw.githubusercontent.com/Hichiro/3x-ui/master/install.sh
+wget --no-check-certificate https://raw.githubusercontent.com/Hichiro/3x-ui/main/install.sh
 chmod +x install.sh
 ./install.sh
 ```
