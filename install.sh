@@ -101,7 +101,7 @@ fi
 install_base() {
     case "${release}" in
     ubuntu | debian | armbian)
-        apt-get update && apt-get install -y -q wget curl tar tzdata systemctl ca-certificates
+        apt-get update && apt-get install -y -q wget curl tar tzdata systemctl ca-certificates cron
         ;;
     centos | almalinux | rocky | oracle)
         yum -y update && yum install -y -q wget curl tar tzdata
