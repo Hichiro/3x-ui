@@ -131,7 +131,7 @@ before_show_menu() {
 }
 
 install() {
-    bash <(curl -Ls https://raw.githubusercontent.com/MHSanaei/3x-ui/main/install.sh)
+    bash <(curl -Ls https://raw.githubusercontent.com/Hichiro/3x-ui/main/install.sh)
     if [[ $? == 0 ]]; then
         if [[ $# == 0 ]]; then
             start
@@ -150,7 +150,7 @@ update() {
         fi
         return 0
     fi
-    bash <(curl -Ls https://raw.githubusercontent.com/MHSanaei/3x-ui/main/install.sh)
+    bash <(curl -Ls https://raw.githubusercontent.com/Hichiro/3x-ui/main/install.sh)
     if [[ $? == 0 ]]; then
         LOGI "Update is complete, Panel has automatically restarted "
         exit 0
@@ -168,7 +168,7 @@ update_menu() {
         return 0
     fi
     
-    wget --no-check-certificate -O /usr/bin/x-ui https://raw.githubusercontent.com/MHSanaei/3x-ui/main/x-ui.sh
+    wget --no-check-certificate -O /usr/bin/x-ui https://raw.githubusercontent.com/Hichiro/3x-ui/main/x-ui.sh
     chmod +x /usr/local/x-ui/x-ui.sh
     chmod +x /usr/bin/x-ui
     
@@ -190,7 +190,7 @@ custom_version() {
         exit 1
     fi
 
-    download_link="https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh"
+    download_link="https://raw.githubusercontent.com/Hichiro/3x-ui/master/install.sh"
 
     # Use the entered panel version in the download link
     install_command="bash <(curl -Ls $download_link) v$panel_version"
@@ -224,7 +224,7 @@ uninstall() {
     echo ""
     echo -e "Uninstalled Successfully.\n"
     echo "If you need to install this panel again, you can use below command:"
-    echo -e "${green}bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)${plain}"
+    echo -e "${green}bash <(curl -Ls https://raw.githubusercontent.com/Hichiro/3x-ui/master/install.sh)${plain}"
     echo ""
     # Trap the SIGTERM signal
     trap delete_script SIGTERM
@@ -502,7 +502,7 @@ enable_bbr() {
 }
 
 update_shell() {
-    wget -O /usr/bin/x-ui -N --no-check-certificate https://github.com/MHSanaei/3x-ui/raw/main/x-ui.sh
+    wget -O /usr/bin/x-ui -N --no-check-certificate https://github.com/Hichiro/3x-ui/raw/main/x-ui.sh
     if [[ $? != 0 ]]; then
         echo ""
         LOGE "Failed to download script, Please check whether the machine can connect Github"
@@ -784,13 +784,13 @@ ssl_cert_issue_main() {
     2)
         local domain=""
         read -p "Please enter your domain name to revoke the certificate: " domain
-        /user/local/.acme.sh/acme.sh --revoke -d ${domain}
+        ~/.acme.sh/acme.sh --revoke -d ${domain}
         LOGI "Certificate revoked"
         ;;
     3)
         local domain=""
         read -p "Please enter your domain name to forcefully renew an SSL certificate: " domain
-        /user/local/.acme.sh/acme.sh --renew -d ${domain} --force
+        ~/.acme.sh/acme.sh --renew -d ${domain} --force
         ;;
     *) echo "Invalid choice" ;;
     esac
@@ -798,7 +798,7 @@ ssl_cert_issue_main() {
 
 ssl_cert_issue() {
     # check for acme.sh first
-    if ! command -v /user/local/.acme.sh/acme.sh &>/dev/null; then
+    if ! command -v ~/.acme.sh/acme.sh &>/dev/null; then
         echo "acme.sh could not be found. we will install it"
         install_acme
         if [ $? -ne 0 ]; then
@@ -837,10 +837,10 @@ ssl_cert_issue() {
     read -p "Please enter your domain name:" domain
     LOGD "your domain is:${domain},check it..."
     # here we need to judge whether there exists cert already
-    local currentCert=$(/user/local/.acme.sh/acme.sh --list | tail -1 | awk '{print $1}')
+    local currentCert=$(~/.acme.sh/acme.sh --list | tail -1 | awk '{print $1}')
 
     if [ ${currentCert} == ${domain} ]; then
-        local certInfo=$(/user/local/.acme.sh/acme.sh --list)
+        local certInfo=$(~/.acme.sh/acme.sh --list)
         LOGE "system already has certs here,can not issue again,current certs details:"
         LOGI "$certInfo"
         exit 1
@@ -849,7 +849,7 @@ ssl_cert_issue() {
     fi
 
     # create a directory for install cert
-    certPath="/etc/ssl/certs/${domain}"
+    certPath="/usr/local/cert/${domain}"
     if [ ! -d "$certPath" ]; then
         mkdir -p "$certPath"
     else
@@ -866,29 +866,29 @@ ssl_cert_issue() {
     LOGI "will use port:${WebPort} to issue certs,please make sure this port is open..."
     # NOTE:This should be handled by user
     # open the port and kill the occupied progress
-    /user/local/.acme.sh/acme.sh --set-default-ca --server letsencrypt
-    /user/local/.acme.sh/acme.sh --issue -d ${domain} --listen-v6 --standalone --httpport ${WebPort}
+    ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
+    ~/.acme.sh/acme.sh --issue -d ${domain} --listen-v6 --standalone --httpport ${WebPort}
     if [ $? -ne 0 ]; then
         LOGE "issue certs failed,please check logs"
-        rm -rf /user/local/.acme.sh/${domain}
+        rm -rf ~/.acme.sh/${domain}
         exit 1
     else
         LOGE "issue certs succeed,installing certs..."
     fi
     # install cert
-    /user/local/.acme.sh/acme.sh --installcert -d ${domain} \
-        --key-file /etc/ssl/certs/${domain}/privkey.pem \
-        --fullchain-file /etc/ssl/certs/${domain}/fullchain.pem
+    ~/.acme.sh/acme.sh --installcert -d ${domain} \
+        --key-file /usr/local/cert/${domain}/privkey.pem \
+        --fullchain-file /usr/local/cert/${domain}/fullchain.pem
 
     if [ $? -ne 0 ]; then
         LOGE "install certs failed,exit"
-        rm -rf /user/local/.acme.sh/${domain}
+        rm -rf ~/.acme.sh/${domain}
         exit 1
     else
         LOGI "install certs succeed,enable auto renew..."
     fi
 
-    /user/local/.acme.sh/acme.sh --upgrade --auto-upgrade
+    ~/.acme.sh/acme.sh --upgrade --auto-upgrade
     if [ $? -ne 0 ]; then
         LOGE "auto renew failed, certs details:"
         ls -lah cert/*
@@ -908,11 +908,11 @@ ssl_cert_issue_CF() {
     LOGI "1.Cloudflare Registered e-mail"
     LOGI "2.Cloudflare Global API Key"
     LOGI "3.The domain name that has been resolved dns to the current server by Cloudflare"
-    LOGI "4.The script applies for a certificate. The default installation path is /etc/ssl/certs "
+    LOGI "4.The script applies for a certificate. The default installation path is /usr/local/cert "
     confirm "Confirmed?[y/n]" "y"
     if [ $? -eq 0 ]; then
         # check for acme.sh first
-        if ! command -v /user/local/.acme.sh/acme.sh &>/dev/null; then
+        if ! command -v ~/.acme.sh/acme.sh &>/dev/null; then
             echo "acme.sh could not be found. we will install it"
             install_acme
             if [ $? -ne 0 ]; then
@@ -923,7 +923,7 @@ ssl_cert_issue_CF() {
         CF_Domain=""
         CF_GlobalKey=""
         CF_AccountEmail=""
-        certPath=/etc/ssl/certs
+        certPath=/usr/local/cert
         if [ ! -d "$certPath" ]; then
             mkdir $certPath
         else
@@ -939,30 +939,30 @@ ssl_cert_issue_CF() {
         LOGD "Please set up registered email:"
         read -p "Input your email here:" CF_AccountEmail
         LOGD "Your registered email address is:${CF_AccountEmail}"
-        /user/local/.acme.sh/acme.sh --set-default-ca --server letsencrypt
+        ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
         if [ $? -ne 0 ]; then
             LOGE "Default CA, Lets'Encrypt fail, script exiting..."
             exit 1
         fi
         export CF_Key="${CF_GlobalKey}"
         export CF_Email=${CF_AccountEmail}
-        /user/local/.acme.sh/acme.sh --issue --dns dns_cf -d ${CF_Domain} -d *.${CF_Domain} --log
+        ~/.acme.sh/acme.sh --issue --dns dns_cf -d ${CF_Domain} -d *.${CF_Domain} --log
         if [ $? -ne 0 ]; then
             LOGE "Certificate issuance failed, script exiting..."
             exit 1
         else
             LOGI "Certificate issued Successfully, Installing..."
         fi
-        /user/local/.acme.sh/acme.sh --installcert -d ${CF_Domain} -d *.${CF_Domain} --ca-file /etc/ssl/certs/ca.cer \
-            --cert-file /etc/ssl/certs/${CF_Domain}.cer --key-file /etc/ssl/certs/${CF_Domain}.key \
-            --fullchain-file /etc/ssl/certs/fullchain.cer
+        ~/.acme.sh/acme.sh --installcert -d ${CF_Domain} -d *.${CF_Domain} --ca-file /usr/local/cert/ca.cer \
+            --cert-file /usr/local/cert/${CF_Domain}.cer --key-file /usr/local/cert/${CF_Domain}.key \
+            --fullchain-file /usr/local/cert/fullchain.cer
         if [ $? -ne 0 ]; then
             LOGE "Certificate installation failed, script exiting..."
             exit 1
         else
             LOGI "Certificate installed Successfully,Turning on automatic updates..."
         fi
-        /user/local/.acme.sh/acme.sh --upgrade --auto-upgrade
+        ~/.acme.sh/acme.sh --upgrade --auto-upgrade
         if [ $? -ne 0 ]; then
             LOGE "Auto update setup Failed, script exiting..."
             ls -lah cert
